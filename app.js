@@ -7,6 +7,14 @@ function normalizeText(s) {
     .toLowerCase();
 }
 
+/** Normaliserade namn i A som är platshållare och inte ska sökas i B (t.ex. dummy-rader). */
+const SKIPPED_LIST_A_NAMES = new Set(["aaa"]);
+
+/** @param {string} norm lowercased & trimmad enligt normalizeText */
+function shouldSkipListAName(norm) {
+  return !norm || SKIPPED_LIST_A_NAMES.has(norm);
+}
+
 /** Kolumn A: prefix (kan innehålla egna streck), sedan ` - `, sedan företagsnamnet som matchas mot B. */
 /** @param {unknown[][]} rows */
 function extractCompanyNamesFromColumnA(rows) {
@@ -20,7 +28,9 @@ function extractCompanyNamesFromColumnA(rows) {
     const idx = text.indexOf(sep);
     if (idx === -1) continue;
     const name = text.slice(idx + sep.length).trim();
-    if (name) out.push({ display: name, norm: normalizeText(name) });
+    const norm = normalizeText(name);
+    if (shouldSkipListAName(norm)) continue;
+    out.push({ display: name, norm });
   }
   return dedupeByNorm(out);
 }
