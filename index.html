@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Matcha organisationsnummer mellan Excel-filer</title>
+    <title>Matcha företagsnamn mellan Excel-filer</title>
     <style>
       :root {
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -99,12 +99,13 @@
     </style>
   </head>
   <body>
-    <h1>Matcha organisationsnummer mellan två Excel-filer</h1>
+    <h1>Matcha företagsnamn mellan två Excel-filer</h1>
     <p class="lead">
-      Lista A: kolumn A med en radtext där <strong>organisationsnumret står efter första strecket</strong>, t.ex.
-      <code>1 - 556077-8899</code> eller <code>9100000300-5560778899018</code> (prefix före strecket ignoreras).
-      Lista B: varje rad och kolumn granskas — om org.nummer finns i en cell (som text eller bara siffror)
-      sparas hela raden i resultatfilen.
+      Lista A: kolumn A med <strong>mellanslag runt strecket</strong> mellan prefix och namn —
+      företagsnamnet är allt <strong>efter första <code> - </code></strong>. Prefixet kan vara bara siffror
+      eller innehålla streck, t.ex. <code>9100000300 - Byggmästarn i Skåne AB</code>,
+      <code>91000-003-00 - Byggmästarn i Skåne AB</code>.
+      Lista B: varje rad och kolumn granskas — om namnet finns i en cell sparas hela raden i resultatfilen.
     </p>
 
     <label for="fileA">Excel-fil A (endast kolumn A används)</label>
@@ -119,8 +120,7 @@
         <label>
           <input type="checkbox" id="exactOnly" />
           <span>
-            Exakt matchning (ignorera små/stora bokstäver; för siffror jämförs även rena siffror i cellen).
-            Annars: cellen får <strong>innehålla</strong> organisationsnumret.
+            Exakt matchning (ignorera små/stora bokstäver). Annars: cellen får <strong>innehålla</strong> namnet.
           </span>
         </label>
         <label>

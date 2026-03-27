@@ -9,9 +9,9 @@ Om du kör från en mapp på datorn:
 2. Öppna index.html (dubbelklick eller "Öppna med" Chrome / Edge / Firefox).
 
 Gemensamt:
-- Fil A: kolumn A med valfritt prefix, första strecket (-), sedan organisationsnumret som ska matchas (t.ex. "1 - 556077-8899").
+- Fil A: kolumn A med "prefix - företagsnamn" där det ska finnas mellanslag före och efter strecket (t.ex. "91000-003-00 - Namn AB"; allt efter första " - " är namnet som matchas).
 - Fil B: första arbetsbladet används; alla rader och kolumner söks igenom.
 - Bocka i rubrikrad för B om rad 1 är kolumnrubriker och inte ska matchas.
-- Matchning: standard är att cellen får innehålla org.nummer (även om B bara har siffror); "Exakt" kräver träff på hela värdet.
+- Matchning: standard är att cellen får innehålla namnet; "Exakt" kräver hela cellens (normaliserade) text.
 
 Filer bearbetas i webbläsaren (ingen uppladdning till server om du inte använder en värd du inte litar på).

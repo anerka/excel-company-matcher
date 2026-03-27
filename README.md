@@ -1,6 +1,6 @@
-# Excel: matcha organisationsnummer
+# Excel: matcha företagsnamn
 
-Webbverktyg som läser två Excel-filer i webbläsaren (filerna lämnar inte din dator), hittar rader i fil B där organisationsnumret från lista A (text efter första strecket i kolumn A) förekommer i någon cell, och låter dig ladda ner en ny `.xlsx` med alla träffar.
+Webbverktyg som läser två Excel-filer i webbläsaren (filerna lämnar inte din dator), hittar rader i fil B där företagsnamnet från lista A (text efter första ` - ` i kolumn A; prefixet får innehålla streck) förekommer i någon cell, och låter dig ladda ner en ny `.xlsx` med alla träffar.
 
 ## GitHub Pages
 

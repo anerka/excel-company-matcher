@@ -7,76 +7,56 @@ function normalizeText(s) {
     .toLowerCase();
 }
 
-function digitsOnly(s) {
-  return String(s ?? "").replace(/\D/g, "");
-}
-
-/** Rad i A: valfritt prefix, första streck (-) och därefter organisationsnumret (jämförs mot varje cell i B). */
+/** Kolumn A: prefix (kan innehålla egna streck), sedan ` - `, sedan företagsnamnet som matchas mot B. */
 /** @param {unknown[][]} rows */
-function extractOrgNumbersFromColumnA(rows) {
-  /** @type {{ display: string; norm: string; digitKey: string }[]} */
+function extractCompanyNamesFromColumnA(rows) {
+  /** @type {{ display: string; norm: string }[]} */
   const out = [];
+  const sep = " - ";
   for (const row of rows) {
     const cell = row[0];
     if (cell === undefined || cell === null || String(cell).trim() === "") continue;
     const text = String(cell).trim();
-    const idx = text.indexOf("-");
+    const idx = text.indexOf(sep);
     if (idx === -1) continue;
-    const org = text.slice(idx + 1).trim();
-    if (!org) continue;
-    const norm = normalizeText(org);
-    const digitKey = digitsOnly(org);
-    out.push({ display: org, norm, digitKey });
+    const name = text.slice(idx + sep.length).trim();
+    if (name) out.push({ display: name, norm: normalizeText(name) });
   }
-  return dedupeByOrg(out);
+  return dedupeByNorm(out);
 }
 
-/** @param {{ display: string; norm: string; digitKey: string }[]} items */
-function dedupeByOrg(items) {
+/** @param {{ display: string; norm: string }[]} names */
+function dedupeByNorm(names) {
   const seen = new Map();
-  for (const n of items) {
-    const key = n.digitKey.length >= 6 ? n.digitKey : n.norm;
-    if (!key || seen.has(key)) continue;
-    seen.set(key, n);
+  for (const n of names) {
+    if (!n.norm || seen.has(n.norm)) continue;
+    seen.set(n.norm, n.display);
   }
-  return [...seen.values()].map((n) => ({
-    display: n.display,
-    norm: n.norm,
-    digitKey: n.digitKey,
-  }));
+  return [...seen.entries()].map(([norm, display]) => ({ norm, display }));
 }
 
 /**
  * @param {unknown[]} row
- * @param {{ norm: string; display: string; digitKey: string }[]} orgList
+ * @param {{ norm: string; display: string }[]} nameList
  * @param {boolean} exactOnly
  */
-function findMatchesInRow(row, orgList, exactOnly) {
+function findMatchesInRow(row, nameList, exactOnly) {
   /** @type {{ display: string; colIndex: number }[]} */
   const hits = [];
   for (let c = 0; c < row.length; c++) {
-    const raw = row[c];
-    const cellNorm = normalizeText(raw);
-    const cellDigits = digitsOnly(raw);
-    if (!cellNorm && !cellDigits) continue;
-    for (const { norm, display, digitKey } of orgList) {
-      let ok = false;
-      if (digitKey.length >= 6 && cellDigits.length >= digitKey.length) {
-        ok = exactOnly
-          ? cellDigits === digitKey
-          : cellDigits === digitKey || cellDigits.includes(digitKey);
-      }
-      if (!ok && norm) {
-        ok = exactOnly ? cellNorm === norm : cellNorm === norm || cellNorm.includes(norm);
-      }
+    const cellNorm = normalizeText(row[c]);
+    if (!cellNorm) continue;
+    for (const { norm, display } of nameList) {
+      if (!norm) continue;
+      const ok = exactOnly ? cellNorm === norm : cellNorm === norm || cellNorm.includes(norm);
       if (ok) hits.push({ display, colIndex: c });
     }
   }
-  const byOrg = new Map();
+  const byName = new Map();
   for (const h of hits) {
-    if (!byOrg.has(h.display)) byOrg.set(h.display, h.colIndex);
+    if (!byName.has(h.display)) byName.set(h.display, h.colIndex);
   }
-  return [...byOrg.entries()].map(([display, colIndex]) => ({ display, colIndex }));
+  return [...byName.entries()].map(([display, colIndex]) => ({ display, colIndex }));
 }
 
 /** @param {File} file */
@@ -155,15 +135,12 @@ function main() {
       const rowsA = firstSheetToAoA(wbA);
       const rowsB = firstSheetToAoA(wbB);
 
-      const extracted = extractOrgNumbersFromColumnA(rowsA);
-      const orgList = [...extracted].sort(
-        (a, b) =>
-          Math.max(b.norm.length, b.digitKey.length) - Math.max(a.norm.length, a.digitKey.length)
-      );
-      if (orgList.length === 0) {
+      const extracted = extractCompanyNamesFromColumnA(rowsA);
+      const nameList = [...extracted].sort((a, b) => b.norm.length - a.norm.length);
+      if (nameList.length === 0) {
         setStatus(
           status,
-          "Hittade inga organisationsnummer i fil A. Varje rad i kolumn A ska ha ett streck (-): text före första strecket ignoreras, text efter är organisationsnumret som jämförs mot B.",
+          "Hittade inga företagsnamn i fil A. Använd mellanslag runt strecket: \"… - Företagsnamn\" (prefixet får ha streck, t.ex. 91000-003-00 - Namn AB).",
           true
         );
         return;
@@ -179,7 +156,7 @@ function main() {
 
       for (let i = 0; i < dataRowsB.length; i++) {
         const row = dataRowsB[i];
-        const matches = findMatchesInRow(row, orgList, exactOnly.checked);
+        const matches = findMatchesInRow(row, nameList, exactOnly.checked);
         if (matches.length === 0) continue;
         matchCount += 1;
         const namesCell = matches.map((m) => m.display).join("; ");
@@ -191,16 +168,13 @@ function main() {
       if (outRows.length === 0) {
         setStatus(
           status,
-          `Inga träffar. Fil A hade ${orgList.length} unika organisationsnummer att söka efter. Prova \"innehåller\" (låt exakt vara avstängd) eller kontrollera format i B.`,
+          `Inga träffar. Fil A hade ${nameList.length} unika namn att söka efter. Prova \"innehåller\" (låt exakt vara avstängd) eller kontrollera stavning.`,
           false
         );
         return;
       }
 
-      const extraHeader = [
-        "Matchade org.nr från lista A",
-        "Kolumn (1-baserat) där träff först hittades",
-      ];
+      const extraHeader = ["Matchade namn från lista A", "Kolumn (1-baserat) där träff först hittades"];
       /** @type {unknown[][]} */
       let finalAoA;
       if (skipHeader && headerRowB) {
@@ -227,7 +201,7 @@ function main() {
 
       setStatus(
         status,
-          `Klart. ${orgList.length} unika organisationsnummer från A. ${matchCount} rader från B matchade (${outRows.length} rader i resultatet).`,
+          `Klart. ${nameList.length} unika namn från A. ${matchCount} rader från B matchade (${outRows.length} rader i resultatet).`,
         false
       );
       downloadRow.hidden = false;
