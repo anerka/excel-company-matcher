@@ -184,6 +184,10 @@ function main() {
         return;
       }
 
+      outRows.sort((a, b) =>
+        String(a[0] ?? "").localeCompare(String(b[0] ?? ""), "sv", { sensitivity: "base" })
+      );
+
       const extraHeader = ["Matchade namn från lista A", "Kolumn (1-baserat) där träff först hittades"];
       /** @type {unknown[][]} */
       let finalAoA;
