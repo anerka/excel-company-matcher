@@ -1,0 +1,17 @@
+Så här använder du matcharen
+
+Om verktyget ligger på GitHub Pages:
+1. Öppna länken du fått (t.ex. https://användarnamn.github.io/excel-company-matcher/).
+2. Välj Excel-fil A och B, justera inställningar om det behövs, kör matchning och ladda ner resultatet.
+
+Om du kör från en mapp på datorn:
+1. Behåll undermappen "vendor" som den är.
+2. Öppna index.html (dubbelklick eller "Öppna med" Chrome / Edge / Firefox).
+
+Gemensamt:
+- Fil A: kolumn A med "organisationsnummer - företagsnamn" (mellanslag runt strecket).
+- Fil B: första arbetsbladet används; alla rader och kolumner söks igenom.
+- Bocka i rubrikrad för B om rad 1 är kolumnrubriker och inte ska matchas.
+- Matchning: standard är att cellen får innehålla namnet; "Exakt" kräver hela cellens text.
+
+Filer bearbetas i webbläsaren (ingen uppladdning till server om du inte använder en värd du inte litar på).

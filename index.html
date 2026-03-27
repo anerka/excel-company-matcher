@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Matcha företagsnamn mellan Excel-filer</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        line-height: 1.5;
+        color: #1a1a1a;
+        background: #f4f4f5;
+      }
+      body {
+        max-width: 40rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      h1 {
+        font-size: 1.35rem;
+        font-weight: 650;
+        margin-bottom: 0.25rem;
+      }
+      p.lead {
+        margin-top: 0;
+        color: #444;
+        font-size: 0.95rem;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.35rem;
+      }
+      input[type="file"] {
+        font-size: 0.9rem;
+      }
+      fieldset {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 0.75rem 1rem 1rem;
+        margin-top: 1.25rem;
+        background: #fff;
+      }
+      legend {
+        font-weight: 600;
+        padding: 0 0.35rem;
+      }
+      .options label {
+        font-weight: 500;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+        cursor: pointer;
+      }
+      .options input {
+        margin-top: 0.2rem;
+      }
+      button {
+        margin-top: 1.5rem;
+        padding: 0.65rem 1.25rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      button:not(:disabled):hover {
+        background: #1d4ed8;
+      }
+      #status {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        white-space: pre-wrap;
+      }
+      #status.error {
+        border-color: #f87171;
+        background: #fef2f2;
+      }
+      #downloadRow {
+        margin-top: 1rem;
+      }
+      a#downloadLink {
+        display: inline-block;
+        font-weight: 600;
+        color: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Matcha företagsnamn mellan två Excel-filer</h1>
+    <p class="lead">
+      Lista A: kolumn A med text som <code>9100000300 - Företag AB</code>. Lista B: alla rader
+      granskas — om företagsnamnet (efter första <code> - </code>) finns i någon cell sparas
+      hela raden till resultatfilen.
+    </p>
+
+    <label for="fileA">Excel-fil A (endast kolumn A används)</label>
+    <input id="fileA" type="file" accept=".xlsx,.xls" />
+
+    <label for="fileB">Excel-fil B (alla rader och kolumner söks igenom)</label>
+    <input id="fileB" type="file" accept=".xlsx,.xls" />
+
+    <fieldset>
+      <legend>Inställningar</legend>
+      <div class="options">
+        <label>
+          <input type="checkbox" id="exactOnly" />
+          <span>Exakt matchning (ignorera små/stora bokstäver). Annars: cellen får <strong>innehålla</strong> namnet.</span>
+        </label>
+        <label>
+          <input type="checkbox" id="skipFirstRowB" />
+          <span>
+            Fil B har rubrik i första raden: då räknas rad 1 som kolumnrubriker, söks inte efter träffar där, och rad 1 följer med överst i resultatet bredvid de två nya kolumnerna.
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    <button type="button" id="runBtn" disabled>Kör matchning och skapa Excel</button>
+
+    <div id="status" hidden></div>
+    <div id="downloadRow" hidden>
+      <a id="downloadLink" href="#" download="matchning-resultat.xlsx">Ladda ner resultat (.xlsx)</a>
+    </div>
+
+    <script src="vendor/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
